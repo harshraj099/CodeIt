@@ -17,41 +17,65 @@ const languages = [
 ];
 
 const defaultCode = {
-  cpp: `class Solution {
-public:
-    vector<int> plusOne(vector<int>& digits) {
-        
-    }
-};`,
-  java: `class Solution {
-    public int[] plusOne(int[] digits) {
-        
-    }
+  cpp: `#include <bits/stdc++.h>
+
+using namespace std;
+
+int main() {
+    // Your code implementation goes here
+    cout << "Hello, World!" << endl;
+    return 0;
 }`,
-  python: `class Solution:
-    def plusOne(self, digits: List[int]) -> List[int]:
-        `,
-  javascript: `var plusOne = function(digits) {
-    
-};`,
-  typescript: `function plusOne(digits: number[]): number[] {
-    
-};`,
-  c: `int* plusOne(int* digits, int digitsSize, int* returnSize) {
-    
-}`,
-  csharp: `public class Solution {
-    public int[] PlusOne(int[] digits) {
-        
+  java: `public class Main {
+    public static void main(String[] args) {
+        // Your code implementation goes here
+        System.out.println("Hello, World!");
     }
 }`,
-  go: `func plusOne(digits []int) []int {
-    
+  python: `def main():
+    # Your code implementation goes here
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()`,
+  javascript: `function main() {
+    // Your code implementation goes here
+    console.log("Hello, World!");
+}
+
+main();`,
+  typescript: `function main(): void {
+    // Your code implementation goes here
+    console.log("Hello, World!");
+}
+
+main();`,
+  c: `#include <stdio.h>
+
+int main() {
+    // Your code implementation goes here
+    printf("Hello, World!\\n");
+    return 0;
 }`,
-  rust: `impl Solution {
-    pub fn plus_one(digits: Vec<i32>) -> Vec<i32> {
-        
+  csharp: `using System;
+
+class Program {
+    static void Main(string[] args) {
+        // Your code implementation goes here
+        Console.WriteLine("Hello, World!");
     }
+}`,
+  go: `package main
+
+import "fmt"
+
+func main() {
+    // Your code implementation goes here
+    fmt.Println("Hello, World!")
+}`,
+  rust: `fn main() {
+    // Your code implementation goes here
+    println!("Hello, World!");
 }`,
 };
 
