@@ -115,10 +115,30 @@ export function CodeProvider({ children }: { children: ReactNode }) {
         } catch (error: any) {
           result = `Error: ${error.message}\n\nStack: ${error.stack || 'No stack trace'}`;
         }
-      } else if (language === "python") {
-        result = "Python execution requires a backend service.\n\nTo enable Python execution, you can:\n1. Set up Judge0 API\n2. Use Piston API\n3. Create a custom backend endpoint";
       } else {
-        result = `${language} execution requires a backend service.\n\nTo enable ${language} execution, you can:\n1. Set up Judge0 API\n2. Use Piston API\n3. Create a custom backend endpoint`;
+        try {
+          const response = await fetch('/api/run', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code,
+              language,
+              input,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            result = `Error: ${errorData.error || 'Failed to execute code'}`;
+          } else {
+            const data = await response.json();
+            result = data.output || 'No output produced';
+          }
+        } catch (fetchError: any) {
+          result = `Error: ${fetchError.message}\n\nMake sure the API route is properly configured.`;
+        }
       }
 
       setOutput(result);
