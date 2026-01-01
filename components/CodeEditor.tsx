@@ -78,11 +78,11 @@ export default function CodeEditor() {
     };
   }, []);
 
-  useEffect(() => {
+  useEffect(() => { 
     if (!code || code.trim() === "") {
       setCode(defaultCode[language as keyof typeof defaultCode] || "");
-    }
-  }, [language, code, setCode]);
+    } 
+  }, []);
 
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
@@ -91,7 +91,7 @@ export default function CodeEditor() {
 
   return (
     <div className="h-full w-full bg-[#1e1e1e] flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-[#252526] flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-[#252526] shrink-0">
         <div className="flex items-center gap-3">
           <label className="text-sm text-gray-300">Language:</label>
           <select
