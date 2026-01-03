@@ -4,6 +4,7 @@ import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   cpp: { language: 'cpp', version: '10.2.0' },

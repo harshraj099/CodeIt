@@ -4,6 +4,7 @@ import { hashPassword, generateOTP } from '@/lib/auth';
 import nodemailer from 'nodemailer';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // Create transporter only if SMTP credentials are available
 function getTransporter() {

@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // GET /api/problems/[slug]/solved - Check if problem is solved
 export async function GET(

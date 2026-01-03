@@ -4,6 +4,7 @@ import { getCurrentUserId } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {

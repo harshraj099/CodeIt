@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 // GET /api/discussions?problemId=123
 export async function GET(request: NextRequest) {
