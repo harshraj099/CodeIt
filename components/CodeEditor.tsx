@@ -3,6 +3,7 @@
 import Editor from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
 import { useCode } from "./CodeContext";
+import LoginModal from "./LoginModal";
 
 const languages = [
   { value: "cpp", label: "C++" },
@@ -16,73 +17,12 @@ const languages = [
   { value: "rust", label: "Rust" },
 ];
 
-const defaultCode = {
-  cpp: `#include <bits/stdc++.h>
-
-using namespace std;
-
-int main() {
-    // Your code implementation goes here
-    cout << "Hello, World!" << endl;
-    return 0;
-}`,
-  java: `public class Main {
-    public static void main(String[] args) {
-        // Your code implementation goes here
-        System.out.println("Hello, World!");
-    }
-}`,
-  python: `def main():
-    # Your code implementation goes here
-    print("Hello, World!")
-
-if __name__ == "__main__":
-    main()`,
-  javascript: `function main() {
-    // Your code implementation goes here
-    console.log("Hello, World!");
-}
-
-main();`,
-  typescript: `function main(): void {
-    // Your code implementation goes here
-    console.log("Hello, World!");
-}
-
-main();`,
-  c: `#include <stdio.h>
-
-int main() {
-    // Your code implementation goes here
-    printf("Hello, World!\\n");
-    return 0;
-}`,
-  csharp: `using System;
-
-class Program {
-    static void Main(string[] args) {
-        // Your code implementation goes here
-        Console.WriteLine("Hello, World!");
-    }
-}`,
-  go: `package main
-
-import "fmt"
-
-func main() {
-    // Your code implementation goes here
-    fmt.Println("Hello, World!")
-}`,
-  rust: `fn main() {
-    // Your code implementation goes here
-    println!("Hello, World!");
-}`,
-};
-
 export default function CodeEditor() {
-  const { code, language, setCode, setLanguage, runCode, isRunning } = useCode();
+  const { code, language, setCode, setLanguage, runCode, isRunning, saveCode, problemId, showLoginModal, setShowLoginModal } = useCode();
   const containerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(400);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -102,16 +42,52 @@ export default function CodeEditor() {
     };
   }, []);
 
-  useEffect(() => { 
-    if (!code || code.trim() === "") {
-      setCode(defaultCode[language as keyof typeof defaultCode] || "");
-    } 
-  }, []);
+  // Auto-save on code change (debounced)
+  useEffect(() => {
+    if (!problemId || !code) return;
 
-  const handleLanguageChange = (newLanguage: string) => {
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save (3 seconds after last change)
+    saveTimeoutRef.current = setTimeout(async () => {
+      setIsSaving(true);
+      await saveCode();
+      setIsSaving(false);
+    }, 3000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [code, problemId, saveCode]);
+
+  // Auto-save when language changes
+  useEffect(() => {
+    if (!problemId) return;
+
+    const saveOnLanguageChange = async () => {
+      setIsSaving(true);
+      await saveCode();
+      setIsSaving(false);
+    };
+
+    saveOnLanguageChange();
+  }, [language, problemId, saveCode]);
+
+  const handleLanguageChange = async (newLanguage: string) => {
     setLanguage(newLanguage);
-    setCode(defaultCode[newLanguage as keyof typeof defaultCode] || "");
+    // Save will be triggered by the language useEffect
   };
+
+  const handleCodeChange = (value: string | undefined) => {
+    setCode(value || "");
+    // Auto-save will be triggered by the code useEffect
+  };
+
 
   return (
     <div className="h-full w-full bg-[#1e1e1e] flex flex-col overflow-hidden">
@@ -129,6 +105,9 @@ export default function CodeEditor() {
               </option>
             ))}
           </select>
+          {isSaving && (
+            <span className="text-xs text-gray-400">Saving...</span>
+          )}
         </div>
         <button
           onClick={runCode}
@@ -148,7 +127,7 @@ export default function CodeEditor() {
           language={language}
           theme="vs-dark"
           value={code}
-          onChange={(value) => setCode(value || "")}
+          onChange={handleCodeChange}
           options={{
             fontSize: 14,
             minimap: { enabled: false },
@@ -158,6 +137,7 @@ export default function CodeEditor() {
           loading={<div className="text-gray-400 p-4">Loading editor...</div>}
         />
       </div>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }

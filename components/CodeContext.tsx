@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 interface CodeContextType {
   code: string;
@@ -13,18 +14,182 @@ interface CodeContextType {
   setInput: (input: string) => void;
   setOutput: (output: string) => void;
   runCode: () => Promise<void>;
+  saveCode: () => Promise<void>;
+  problemId: string | null;
+  showLoginModal: boolean;
+  setShowLoginModal: (show: boolean) => void;
 }
 
 const CodeContext = createContext<CodeContextType | undefined>(undefined);
 
+const defaultCode = {
+  cpp: `#include <bits/stdc++.h>
+
+using namespace std;
+
+int main() {
+    // Your code implementation goes here
+    cout << "Hello, World!" << endl;
+    return 0;
+}`,
+  java: `public class Main {
+    public static void main(String[] args) {
+        // Your code implementation goes here
+        System.out.println("Hello, World!");
+    }
+}`,
+  python: `def main():
+    # Your code implementation goes here
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()`,
+  javascript: `function main() {
+    // Your code implementation goes here
+    console.log("Hello, World!");
+}
+
+main();`,
+  typescript: `function main(): void {
+    // Your code implementation goes here
+    console.log("Hello, World!");
+}
+
+main();`,
+  c: `#include <stdio.h>
+
+int main() {
+    // Your code implementation goes here
+    printf("Hello, World!\\n");
+    return 0;
+}`,
+  csharp: `using System;
+
+class Program {
+    static void Main(string[] args) {
+        // Your code implementation goes here
+        Console.WriteLine("Hello, World!");
+    }
+}`,
+  go: `package main
+
+import "fmt"
+
+func main() {
+    // Your code implementation goes here
+    fmt.Println("Hello, World!")
+}`,
+  rust: `fn main() {
+    // Your code implementation goes here
+    println!("Hello, World!");
+}`,
+};
+
 export function CodeProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const problemId = pathname?.split("/").pop() || null;
+  
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [isLoadingCode, setIsLoadingCode] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Save code before problem changes
+  useEffect(() => {
+    return () => {
+      // Save code when component unmounts or problem changes
+      if (problemId && code) {
+        saveCode();
+      }
+    };
+  }, [problemId]);
+
+  // Load saved code when problem changes
+  useEffect(() => {
+    if (!problemId) return;
+
+    const loadSavedCode = async () => {
+      setIsLoadingCode(true);
+      try {
+        const response = await fetch(`/api/code/load?problemId=${problemId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.code && data.language) {
+            setCode(data.code);
+            setLanguage(data.language);
+          } else {
+            // No saved code, use default template for current language
+            const defaultCodeForLang = defaultCode[language as keyof typeof defaultCode] || "";
+            setCode(defaultCodeForLang);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading saved code:", error);
+        const defaultCodeForLang = defaultCode[language as keyof typeof defaultCode] || "";
+        setCode(defaultCodeForLang);
+      } finally {
+        setIsLoadingCode(false);
+      }
+    };
+
+    loadSavedCode();
+  }, [problemId]);
+
+  // Reset code when language changes (only if we're not currently loading saved code)
+  // This handles the case where user manually changes language
+  useEffect(() => {
+    if (isLoadingCode) return;
+    
+    // Don't override if code already exists (user might have written something)
+    // This effect mainly handles initial setup
+    if (!code || code.trim() === "") {
+      const currentDefault = defaultCode[language as keyof typeof defaultCode] || "";
+      setCode(currentDefault);
+    }
+  }, [language]);
+
+  const saveCode = async () => {
+    if (!problemId) return;
+
+    try {
+      const response = await fetch("/api/code/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemId,
+          language,
+          code,
+        }),
+      });
+      
+      // If not logged in, save fails silently (code will be lost, but that's expected)
+      if (!response.ok && response.status !== 401) {
+        console.error("Error saving code:", await response.text());
+      }
+    } catch (error) {
+      // Silently fail if user is not logged in
+      console.error("Error saving code:", error);
+    }
+  };
 
   const runCode = async () => {
+    // Check if user is logged in before running
+    try {
+      const authCheck = await fetch("/api/auth/me");
+      if (!authCheck.ok) {
+        setShowLoginModal(true);
+        return;
+      }
+    } catch (error) {
+      setShowLoginModal(true);
+      return;
+    }
+
     setIsRunning(true);
     setOutput("Running...\n");
 
@@ -131,6 +296,12 @@ export function CodeProvider({ children }: { children: ReactNode }) {
 
           if (!response.ok) {
             const errorData = await response.json();
+            if (response.status === 401) {
+              setShowLoginModal(true);
+              setIsRunning(false);
+              setOutput("");
+              return;
+            }
             result = `Error: ${errorData.error || 'Failed to execute code'}`;
           } else {
             const data = await response.json();
@@ -162,6 +333,10 @@ export function CodeProvider({ children }: { children: ReactNode }) {
         setInput,
         setOutput,
         runCode,
+        saveCode,
+        problemId,
+        showLoginModal,
+        setShowLoginModal,
       }}
     >
       {children}
@@ -176,4 +351,3 @@ export function useCode() {
   }
   return context;
 }
-
