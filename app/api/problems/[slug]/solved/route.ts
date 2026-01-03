@@ -6,11 +6,12 @@ import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 // GET /api/problems/[slug]/solved - Check if problem is solved
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const userId = await requireAuth();
-    const problemId = await getOrCreateProblemBySlug(params.slug);
+    const problemId = await getOrCreateProblemBySlug(slug);
 
     const solved = await prisma.solvedProblem.findUnique({
       where: {
@@ -37,11 +38,12 @@ export async function GET(
 // POST /api/problems/[slug]/solved - Mark problem as solved
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const userId = await requireAuth();
-    const problemId = await getOrCreateProblemBySlug(params.slug);
+    const problemId = await getOrCreateProblemBySlug(slug);
 
     const solved = await prisma.solvedProblem.upsert({
       where: {
