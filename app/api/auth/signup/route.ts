@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import nodemailer from 'nodemailer';
 
+export const dynamic = 'force-dynamic';
+
 // Create transporter only if SMTP credentials are available
 function getTransporter() {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {

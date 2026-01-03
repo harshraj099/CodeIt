@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { problemId, language, code } = await request.json();

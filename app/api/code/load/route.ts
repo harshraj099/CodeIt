@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

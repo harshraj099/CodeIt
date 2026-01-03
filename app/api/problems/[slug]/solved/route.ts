@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/problems/[slug]/solved - Check if problem is solved
 export async function GET(
   request: NextRequest,
