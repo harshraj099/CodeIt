@@ -9,7 +9,7 @@ import InputPanel from "./InputPanel";
 export default function MainLayout() {
   return (
     <CodeProvider>
-      <div className="h-screen w-screen overflow-hidden">
+      <div className="h-full w-full overflow-hidden">
         <Group orientation="horizontal" className="h-full w-full">
           <Panel defaultSize={40} minSize={20}>
             <div className="h-full w-full">

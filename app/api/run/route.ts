@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   cpp: { language: 'cpp', version: '10.2.0' },
@@ -8,14 +12,17 @@ const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
   javascript: { language: 'javascript', version: '18.15.0' },
   typescript: { language: 'typescript', version: '5.0.0' },
   csharp: { language: 'csharp', version: '6.12.0' },
-  go: { language: 'go', version: '1.21.0' },
-  rust: { language: 'rust', version: '1.70.0' },
+  go: { language: 'go', version: '1.16.2' },
+  rust: { language: 'rust', version: '1.68.2' },
 };
 
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
 
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication to run code
+    await requireAuth();
+
     const { code, language, input } = await request.json();
 
     const langConfig = LANGUAGE_MAP[language];
@@ -84,10 +91,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ output });
   } catch (error: any) {
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Please login to run code' },
+        { status: 401 }
+      );
+    }
     console.error('Error executing code:', error);
     return NextResponse.json(
       { error: `Failed to execute code: ${error.message}` },
       { status: 500 }
     );
   }
-};
+}
