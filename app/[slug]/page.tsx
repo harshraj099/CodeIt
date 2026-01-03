@@ -1,11 +1,12 @@
 import MainLayout from "@/components/MainLayout";
 import Header from "@/components/Header";
 
-export default function ProblemPage({ 
+export default async function ProblemPage({ 
   params 
 }: { 
-  params: { slug: string } 
+  params: Promise<{ slug: string }> 
 }) {
+  await params; // Ensure params is resolved (even though we don't use it here)
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       <Header />

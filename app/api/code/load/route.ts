@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
     const actualProblemId = await getOrCreateProblemBySlug(problemId);
     const userId = await getCurrentUserId();
 
+    // If user is not logged in, return null
+    if (!userId) {
+      return NextResponse.json({ code: null, language: null });
+    }
+
     const userCode = await prisma.userCode.findUnique({
       where: {
         userId_problemId: {

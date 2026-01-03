@@ -93,13 +93,11 @@ export async function POST(request: NextRequest) {
         { error: 'Please login to run code' },
         { status: 401 }
       );
-    }else{
-      console.error('Error executing code:', error);
-      return NextResponse.json(
-        { error: `Failed to execute code: ${error.message}` },
-        { status: 500 }
-      );
-
     }
-  } 
-};
+    console.error('Error executing code:', error);
+    return NextResponse.json(
+      { error: `Failed to execute code: ${error.message}` },
+      { status: 500 }
+    );
+  }
+}
