@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 interface CodeContextType {
@@ -28,7 +28,6 @@ const defaultCode = {
 using namespace std;
 
 int main() {
-    // Your code implementation goes here
     cout << "Hello, World!" << endl;
     return 0;
 }`,
@@ -39,7 +38,6 @@ int main() {
     }
 }`,
   python: `def main():
-    # Your code implementation goes here
     print("Hello, World!")
 
 if __name__ == "__main__":
@@ -51,7 +49,6 @@ if __name__ == "__main__":
 
 main();`,
   typescript: `function main(): void {
-    // Your code implementation goes here
     console.log("Hello, World!");
 }
 
@@ -67,7 +64,6 @@ int main() {
 
 class Program {
     static void Main(string[] args) {
-        // Your code implementation goes here
         Console.WriteLine("Hello, World!");
     }
 }`,
@@ -80,7 +76,6 @@ func main() {
     fmt.Println("Hello, World!")
 }`,
   rust: `fn main() {
-    // Your code implementation goes here
     println!("Hello, World!");
 }`,
 };
@@ -96,6 +91,8 @@ export function CodeProvider({ children }: { children: ReactNode }) {
   const [isRunning, setIsRunning] = useState(false);
   const [isLoadingCode, setIsLoadingCode] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const prevLanguageRef = useRef<string>(language);
+  const codeRef = useRef<string>(code);
 
   // Save code before problem changes
   useEffect(() => {
@@ -107,7 +104,6 @@ export function CodeProvider({ children }: { children: ReactNode }) {
     };
   }, [problemId]);
 
-  // Load saved code when problem changes
   useEffect(() => {
     if (!problemId) return;
 
@@ -138,18 +134,31 @@ export function CodeProvider({ children }: { children: ReactNode }) {
     loadSavedCode();
   }, [problemId]);
 
-  // Reset code when language changes (only if we're not currently loading saved code)
-  // This handles the case where user manually changes language
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
+
+  // Update boilerplate when language changes
   useEffect(() => {
     if (isLoadingCode) return;
     
-    // Don't override if code already exists (user might have written something)
-    // This effect mainly handles initial setup
-    if (!code || code.trim() === "") {
+    // Only update if language actually changed
+    if (prevLanguageRef.current === language) return;
+    prevLanguageRef.current = language;
+    
+    // Check if current code is empty or matches any default boilerplate
+    const currentCode = codeRef.current;
+    const isCodeEmpty = !currentCode || currentCode.trim() === "";
+    const isDefaultBoilerplate = Object.values(defaultCode).some(
+      (defaultCodeTemplate) => currentCode.trim() === defaultCodeTemplate.trim()
+    );
+    
+    // If code is empty or matches a default boilerplate, update to new language's boilerplate
+    if (isCodeEmpty || isDefaultBoilerplate) {
       const currentDefault = defaultCode[language as keyof typeof defaultCode] || "";
       setCode(currentDefault);
     }
-  }, [language]);
+  }, [language, isLoadingCode]);
 
   const saveCode = async () => {
     if (!problemId) return;
@@ -167,7 +176,6 @@ export function CodeProvider({ children }: { children: ReactNode }) {
         }),
       });
       
-      // If not logged in, save fails silently (code will be lost, but that's expected)
       if (!response.ok && response.status !== 401) {
         console.error("Error saving code:", await response.text());
       }
@@ -178,7 +186,6 @@ export function CodeProvider({ children }: { children: ReactNode }) {
   };
 
   const runCode = async () => {
-    // Check if user is logged in before running
     try {
       const authCheck = await fetch("/api/auth/me");
       if (!authCheck.ok) {
