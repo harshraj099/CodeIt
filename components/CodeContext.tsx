@@ -176,12 +176,27 @@ export function CodeProvider({ children }: { children: ReactNode }) {
         }),
       });
       
-      if (!response.ok && response.status !== 401) {
-        console.error("Error saving code:", await response.text());
+      if (!response.ok) {
+        if (response.status === 401) {
+          return;
+        }
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error && errorData.error.includes("database")) {
+            return;
+          }
+        } catch {
+          if (errorText.includes("database") || errorText.includes("Can't reach database")) {
+            return;
+          }
+        }
       }
-    } catch (error) {
-      // Silently fail if user is not logged in
-      console.error("Error saving code:", error);
+    } catch (error: any) {
+      const errorMessage = error?.message || String(error);
+      if (errorMessage.includes("database") || errorMessage.includes("Can't reach database")) {
+        return;
+      }
     }
   };
 
