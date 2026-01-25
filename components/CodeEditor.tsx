@@ -42,16 +42,12 @@ export default function CodeEditor() {
     };
   }, []);
 
-  // Auto-save on code change (debounced)
   useEffect(() => {
-    if (!problemId || !code) return;
-
-    // Clear existing timeout
+    if (!problemId || !code) return; 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Set new timeout for auto-save (3 seconds after last change)
     saveTimeoutRef.current = setTimeout(async () => {
       setIsSaving(true);
       await saveCode();
@@ -65,7 +61,6 @@ export default function CodeEditor() {
     };
   }, [code, problemId, saveCode]);
 
-  // Auto-save when language changes
   useEffect(() => {
     if (!problemId) return;
 
@@ -79,13 +74,11 @@ export default function CodeEditor() {
   }, [language, problemId, saveCode]);
 
   const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage);
-    // Save will be triggered by the language useEffect
+    setLanguage(newLanguage); 
   };
 
   const handleCodeChange = (value: string | undefined) => {
-    setCode(value || "");
-    // Auto-save will be triggered by the code useEffect
+    setCode(value || ""); 
   };
 
 

@@ -31,7 +31,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to home page
       router.push("/");
       router.refresh();
     } catch (err) {

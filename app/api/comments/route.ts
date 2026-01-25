@@ -5,7 +5,6 @@ import { requireAuth } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// POST /api/comments
 export async function POST(request: NextRequest) {
   try {
     const { discussionId, parentId, content } = await request.json();
@@ -36,7 +35,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Get vote count
     const votes = await prisma.vote.findMany({
       where: {
         targetType: 'comment',
@@ -70,7 +68,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/comments?discussionId=123
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -98,7 +95,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get vote counts for each comment
     const commentsWithVotes = await Promise.all(
       comments.map(async (comment) => {
         const votes = await prisma.vote.findMany({
@@ -121,7 +117,6 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // Build nested structure
     interface CommentWithReplies {
       id: string;
       discussionId: string;

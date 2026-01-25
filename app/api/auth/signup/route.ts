@@ -6,7 +6,6 @@ import nodemailer from 'nodemailer';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Create transporter only if SMTP credentials are available
 function getTransporter() {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     return null;
@@ -23,7 +22,6 @@ function getTransporter() {
   });
 }
 
-// Step 1: Request OTP
 export async function POST(request: NextRequest) {
   try {
     const { email, username, password, step, otp } = await request.json();
@@ -35,7 +33,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -44,9 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 1: Request OTP
     if (step === 'request-otp') {
-      // Check if user already exists (only in request-otp step)
       const existingUser = await prisma.user.findFirst({
         where: {
           OR: [
@@ -57,7 +52,6 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingUser && existingUser.password && !existingUser.otp) {
-        // User exists and is fully registered (has password, no pending OTP)
         return NextResponse.json(
           { error: 'User already exists' },
           { status: 400 }
@@ -78,28 +72,26 @@ export async function POST(request: NextRequest) {
       }
 
       const otpCode = generateOTP();
-      const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
       const hashedPassword = await hashPassword(password);
 
-      // Update or create user with OTP and hashed password
       await prisma.user.upsert({
         where: { email },
         update: {
           otp: otpCode,
           otpExpires,
           username,
-          password: hashedPassword, // Store hashed password temporarily
+          password: hashedPassword,
         },
         create: {
           email,
           username,
           otp: otpCode,
           otpExpires,
-          password: hashedPassword, // Store hashed password
+          password: hashedPassword,
         },
       });
 
-      // Send OTP email
       let emailSent = false;
       const transporter = getTransporter();
 
@@ -132,7 +124,6 @@ export async function POST(request: NextRequest) {
           }
         }
       } else {
-        // Development mode: log OTP to console
         console.log(`\n========================================`);
         console.log(`[DEV MODE] OTP for ${email}: ${otpCode}`);
         console.log(`========================================\n`);
@@ -147,12 +138,10 @@ export async function POST(request: NextRequest) {
           : isDev 
             ? 'OTP generated (check console or use the OTP below)' 
             : 'OTP sent to your email',
-        // Always return OTP in development or if email wasn't sent
         ...((isDev || !emailSent) && { otp: otpCode }),
       });
     }
 
-    // Step 2: Verify OTP and complete signup
     if (step === 'verify-otp' && otp) {
       const user = await prisma.user.findUnique({
         where: { email },
@@ -179,8 +168,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Password is already stored (hashed) from step 1
-      // Just clear the OTP fields to complete signup
       await prisma.user.update({
         where: { email },
         data: {

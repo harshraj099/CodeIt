@@ -18,11 +18,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // problemId can be either a slug or actual ID
     const actualProblemId = await getOrCreateProblemBySlug(problemId);
     const userId = await getCurrentUserId();
 
-    // If user is not logged in, return null
     if (!userId) {
       return NextResponse.json({ code: null, language: null });
     }
@@ -44,7 +42,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Return null if no saved code exists
     return NextResponse.json({ code: null, language: null });
   } catch (error: any) {
     console.error('Error loading code:', error);

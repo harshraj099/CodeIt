@@ -33,7 +33,6 @@ int main() {
 }`,
   java: `public class Main {
     public static void main(String[] args) {
-        // Your code implementation goes here
         System.out.println("Hello, World!");
     }
 }`,
@@ -43,7 +42,6 @@ int main() {
 if __name__ == "__main__":
     main()`,
   javascript: `function main() {
-    // Your code implementation goes here
     console.log("Hello, World!");
 }
 
@@ -56,7 +54,6 @@ main();`,
   c: `#include <stdio.h>
 
 int main() {
-    // Your code implementation goes here
     printf("Hello, World!\\n");
     return 0;
 }`,
@@ -72,7 +69,6 @@ class Program {
 import "fmt"
 
 func main() {
-    // Your code implementation goes here
     fmt.Println("Hello, World!")
 }`,
   rust: `fn main() {
@@ -94,10 +90,8 @@ export function CodeProvider({ children }: { children: ReactNode }) {
   const prevLanguageRef = useRef<string>(language);
   const codeRef = useRef<string>(code);
 
-  // Save code before problem changes
   useEffect(() => {
     return () => {
-      // Save code when component unmounts or problem changes
       if (problemId && code) {
         saveCode();
       }
@@ -117,7 +111,6 @@ export function CodeProvider({ children }: { children: ReactNode }) {
             setCode(data.code);
             setLanguage(data.language);
           } else {
-            // No saved code, use default template for current language
             const defaultCodeForLang = defaultCode[language as keyof typeof defaultCode] || "";
             setCode(defaultCodeForLang);
           }
@@ -138,22 +131,18 @@ export function CodeProvider({ children }: { children: ReactNode }) {
     codeRef.current = code;
   }, [code]);
 
-  // Update boilerplate when language changes
   useEffect(() => {
     if (isLoadingCode) return;
     
-    // Only update if language actually changed
     if (prevLanguageRef.current === language) return;
     prevLanguageRef.current = language;
     
-    // Check if current code is empty or matches any default boilerplate
     const currentCode = codeRef.current;
     const isCodeEmpty = !currentCode || currentCode.trim() === "";
     const isDefaultBoilerplate = Object.values(defaultCode).some(
       (defaultCodeTemplate) => currentCode.trim() === defaultCodeTemplate.trim()
     );
     
-    // If code is empty or matches a default boilerplate, update to new language's boilerplate
     if (isCodeEmpty || isDefaultBoilerplate) {
       const currentDefault = defaultCode[language as keyof typeof defaultCode] || "";
       setCode(currentDefault);

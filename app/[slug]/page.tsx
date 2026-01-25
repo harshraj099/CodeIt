@@ -6,7 +6,7 @@ export default async function ProblemPage({
 }: { 
   params: Promise<{ slug: string }> 
 }) {
-  await params; // Ensure params is resolved (even though we don't use it here)
+  await params;
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       <Header />

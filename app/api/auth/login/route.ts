@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) {
       return NextResponse.json(
@@ -38,16 +36,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate token
     const token = generateToken(user.id);
 
-    // Set cookie
     const cookieStore = await cookies();
     cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     return NextResponse.json({

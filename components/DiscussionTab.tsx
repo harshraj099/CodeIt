@@ -15,7 +15,7 @@ interface Discussion {
   upvotes: number;
   downvotes: number;
   commentCount: number;
-  userVote?: number; // 1 for upvote, -1 for downvote, undefined for no vote
+  userVote?: number;
 }
 
 interface Comment {
@@ -31,7 +31,7 @@ interface Comment {
   downvotes: number;
   parentId: string | null;
   replies: Comment[];
-  userVote?: number; // 1 for upvote, -1 for downvote, undefined for no vote
+  userVote?: number;
 }
 
 interface DiscussionTabProps {
@@ -49,7 +49,7 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
-  const [userVotes, setUserVotes] = useState<Record<string, number>>({}); // targetId -> vote value
+  const [userVotes, setUserVotes] = useState<Record<string, number>>({});
 
   const loadDiscussions = async () => {
     try {
@@ -68,7 +68,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
 
   useEffect(() => {
     loadDiscussions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problemId]);
 
   const loadComments = async (discussionId: string) => {
@@ -108,11 +107,10 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
     }
   };
 
-  const handleVote = async (targetType: "discussion" | "comment", targetId: string, currentVoteCount: number) => {
+  const handleVote = async (targetType: "discussion" | "comment", targetId: string) => {
     const voteKey = `${targetType}-${targetId}`;
     const currentVote = userVotes[voteKey];
     
-    // If user already upvoted, don't allow another upvote
     if (currentVote === 1) {
       return;
     }
@@ -130,7 +128,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
 
       if (response.ok) {
         const data = await response.json();
-        // Update vote state
         const newVote = currentVote === 1 ? undefined : 1;
         setUserVotes(prev => {
           const updated = { ...prev };
@@ -142,7 +139,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
           return updated;
         });
 
-        // Update with actual vote count
         if (targetType === "discussion") {
           setDiscussions(discussions.map(d => 
             d.id === targetId ? { 
@@ -183,11 +179,10 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
     }
   };
 
-  const handleDownvote = async (targetType: "discussion" | "comment", targetId: string, currentVoteCount: number) => {
+  const handleDownvote = async (targetType: "discussion" | "comment", targetId: string) => {
     const voteKey = `${targetType}-${targetId}`;
     const currentVote = userVotes[voteKey];
     
-    // If user already downvoted, don't allow another downvote
     if (currentVote === -1) {
       return;
     }
@@ -205,7 +200,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
 
       if (response.ok) {
         const data = await response.json();
-        // Update vote state
         const newVote = currentVote === -1 ? undefined : -1;
         setUserVotes(prev => {
           const updated = { ...prev };
@@ -217,7 +211,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
           return updated;
         });
 
-        // Update with actual vote count
         if (targetType === "discussion") {
           setDiscussions(discussions.map(d => 
             d.id === targetId ? { 
@@ -276,7 +269,6 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
       if (response.ok) {
         const comment = await response.json();
         if (parentId) {
-          // Add reply to the parent comment
           const addReply = (comments: Comment[]): Comment[] => {
             return comments.map(c => {
               if (c.id === parentId) {
@@ -312,7 +304,7 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
         <div className="flex gap-3">
           <div className="flex flex-col items-center gap-1 min-w-[40px]">
             <button
-              onClick={() => handleVote("comment", comment.id, comment.voteCount)}
+              onClick={() => handleVote("comment", comment.id)}
               disabled={userVotes[`comment-${comment.id}`] === 1}
               className={`transition-colors text-lg leading-none ${
                 userVotes[`comment-${comment.id}`] === 1
@@ -325,7 +317,7 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
             </button>
             <span className="text-sm font-medium text-gray-300">{comment.voteCount}</span>
             <button
-              onClick={() => handleDownvote("comment", comment.id, comment.voteCount)}
+              onClick={() => handleDownvote("comment", comment.id)}
               disabled={userVotes[`comment-${comment.id}`] === -1}
               className={`transition-colors text-lg leading-none ${
                 userVotes[`comment-${comment.id}`] === -1
@@ -413,11 +405,10 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
             </div>
             <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed mb-4">{selectedDiscussion.content}</div>
             
-            {/* Vote buttons below the post */}
             <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-700">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleVote("discussion", selectedDiscussion.id, selectedDiscussion.voteCount)}
+                  onClick={() => handleVote("discussion", selectedDiscussion.id)}
                   disabled={userVotes[`discussion-${selectedDiscussion.id}`] === 1}
                   className={`transition-colors text-lg font-bold px-3 py-1.5 rounded ${
                     userVotes[`discussion-${selectedDiscussion.id}`] === 1
@@ -430,7 +421,7 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
                 </button>
                 <span className="text-base font-semibold text-gray-300 px-2">{selectedDiscussion.voteCount}</span>
                 <button
-                  onClick={() => handleDownvote("discussion", selectedDiscussion.id, selectedDiscussion.voteCount)}
+                  onClick={() => handleDownvote("discussion", selectedDiscussion.id)}
                   disabled={userVotes[`discussion-${selectedDiscussion.id}`] === -1}
                   className={`transition-colors text-lg font-bold px-3 py-1.5 rounded ${
                     userVotes[`discussion-${selectedDiscussion.id}`] === -1
@@ -561,16 +552,15 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
                     <span>{new Date(discussion.createdAt).toLocaleDateString()}</span>
                     <span>·</span>
                     <span className="text-blue-400">{discussion.commentCount} {discussion.commentCount === 1 ? 'comment' : 'comments'}</span>
-                  </div>
                 </div>
+              </div>
                 
-                {/* Vote buttons below the post */}
                 <div className="flex items-center gap-4 pt-3 border-t border-gray-700" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleVote("discussion", discussion.id, discussion.voteCount);
+                        handleVote("discussion", discussion.id);
                       }}
                       disabled={userVotes[`discussion-${discussion.id}`] === 1}
                       className={`transition-colors text-sm font-bold px-3 py-1.5 rounded ${
@@ -586,7 +576,7 @@ export default function DiscussionTab({ problemId }: DiscussionTabProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDownvote("discussion", discussion.id, discussion.voteCount);
+                        handleDownvote("discussion", discussion.id);
                       }}
                       disabled={userVotes[`discussion-${discussion.id}`] === -1}
                       className={`transition-colors text-sm font-bold px-3 py-1.5 rounded ${

@@ -5,7 +5,6 @@ import { requireAuth } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// POST /api/votes
 export async function POST(request: NextRequest) {
   try {
     const { targetType, targetId, value } = await request.json();
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
 
     const userId = await requireAuth();
 
-    // Check if vote already exists
     const existingVote = await prisma.vote.findUnique({
       where: {
         userId_targetType_targetId: {
@@ -48,7 +46,6 @@ export async function POST(request: NextRequest) {
 
     if (existingVote) {
       if (existingVote.value === value) {
-        // Same vote - remove it
         await prisma.vote.delete({
           where: {
             id: existingVote.id,
@@ -56,7 +53,6 @@ export async function POST(request: NextRequest) {
         });
         result = { action: 'removed', vote: null };
       } else {
-        // Opposite vote - update value
         result = await prisma.vote.update({
           where: {
             id: existingVote.id,
@@ -68,7 +64,6 @@ export async function POST(request: NextRequest) {
         result = { action: 'updated', vote: result };
       }
     } else {
-      // No existing vote - create new
       result = await prisma.vote.create({
         data: {
           userId,
@@ -80,7 +75,6 @@ export async function POST(request: NextRequest) {
       result = { action: 'created', vote: result };
     }
 
-    // Calculate new vote counts and update counters
     const votes = await prisma.vote.findMany({
       where: {
         targetType,
@@ -92,7 +86,6 @@ export async function POST(request: NextRequest) {
     const downvotes = votes.filter(v => v.value === -1).length;
     const voteCount = votes.reduce((sum, vote) => sum + vote.value, 0);
 
-    // Update counters in Discussion or Comment
     if (targetType === 'discussion') {
       await prisma.discussion.update({
         where: { id: targetId },

@@ -37,8 +37,6 @@ export default function ProblemPanel() {
     }
   };
 
-  // Get problem ID from database - for now use slug as problemId
-  // In a real app, you'd fetch the problem from DB and use its ID
   const problemId = slug;
 
   useEffect(() => {
@@ -60,7 +58,6 @@ export default function ProblemPanel() {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#1e1e1e] text-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="p-6 border-b border-gray-700 shrink-0 bg-gray-800/30">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -107,7 +104,6 @@ export default function ProblemPanel() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 border-b border-gray-700 -mb-px">
           <button
             onClick={() => setActiveTab("description")}
@@ -138,7 +134,6 @@ export default function ProblemPanel() {
         </div>
       </div>
 
-      {/* Tab Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === "description" && (
           <div className="p-6">

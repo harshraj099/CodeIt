@@ -20,7 +20,6 @@ const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
 
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication to run code
     await requireAuth();
 
     const { code, language, input } = await request.json();

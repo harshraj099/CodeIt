@@ -6,7 +6,6 @@ import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// GET /api/problems/[slug]/solved - Check if problem is solved
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -38,7 +37,6 @@ export async function GET(
   }
 }
 
-// POST /api/problems/[slug]/solved - Mark problem as solved
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }

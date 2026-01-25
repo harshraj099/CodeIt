@@ -6,7 +6,6 @@ import { getOrCreateProblemBySlug } from '@/lib/problems-db';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// GET /api/discussions?problemId=123
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // Sort by vote count (descending)
     discussionsWithVotes.sort((a, b) => b.voteCount - a.voteCount);
 
     return NextResponse.json(discussionsWithVotes);
@@ -77,7 +75,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/discussions
 export async function POST(request: NextRequest) {
   try {
     const { problemId, title, content } = await request.json();

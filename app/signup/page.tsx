@@ -21,13 +21,11 @@ export default function SignupPage() {
     setError("");
     setMessage("");
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    // Validate password strength
     if (password.length < 6) {
       setError("Password must be at least 6 characters long");
       return;
@@ -92,7 +90,6 @@ export default function SignupPage() {
 
       setMessage(data.message || "Account created successfully! Redirecting to login...");
       
-      // Redirect to login after successful signup
       setTimeout(() => {
         router.push("/login");
       }, 2000);

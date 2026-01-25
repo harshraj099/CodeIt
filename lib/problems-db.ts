@@ -10,18 +10,14 @@ export async function getOrCreateProblemBySlug(slug: string): Promise<string> {
     return problem.id;
   }
 
-  // If not found, get from hardcoded problems and create in DB
   const hardcodedProblem = problems[slug];
   if (!hardcodedProblem) {
     throw new Error(`Problem with slug "${slug}" not found`);
   }
 
-  // Create problem in database with test cases
-  // Generate test cases from examples (for now, use examples as test cases)
   const inputCases = hardcodedProblem.examples.map(ex => ex.input);
   const outputCases = hardcodedProblem.examples.map(ex => ex.output);
   
-  // Add a few more default test cases if we have less than 4
   while (inputCases.length < 4) {
     inputCases.push(inputCases[inputCases.length - 1] || "test input");
     outputCases.push(outputCases[outputCases.length - 1] || "test output");
@@ -33,7 +29,7 @@ export async function getOrCreateProblemBySlug(slug: string): Promise<string> {
       title: hardcodedProblem.title,
       difficulty: hardcodedProblem.difficulty,
       description: hardcodedProblem.description,
-      inputCases: inputCases.slice(0, 5), // Max 5 test cases
+      inputCases: inputCases.slice(0, 5),
       outputCases: outputCases.slice(0, 5),
     },
   });

@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get problem with test cases
     const actualProblemId = await getOrCreateProblemBySlug(problemId);
     const problem = await prisma.problem.findUnique({
       where: { id: actualProblemId },
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Run code against all test cases
     const results = await Promise.all(
       problem.inputCases.map(async (inputCase, index) => {
         try {
@@ -146,7 +144,6 @@ export async function POST(request: NextRequest) {
     const passedCount = results.filter(r => r.passed).length;
     const totalCount = results.length;
 
-    // If all tests passed, mark problem as solved
     if (allPassed) {
       try {
         await prisma.solvedProblem.upsert({
@@ -164,7 +161,6 @@ export async function POST(request: NextRequest) {
         });
       } catch (error) {
         console.error('Error marking problem as solved:', error);
-        // Don't fail the request if marking as solved fails
       }
     }
 

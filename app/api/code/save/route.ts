@@ -17,17 +17,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // problemId can be either a slug or actual ID
-    // Try to get/create by slug first
     const actualProblemId = await getOrCreateProblemBySlug(problemId);
     const userId = await getCurrentUserId();
 
-    // If user is not logged in, silently fail (code won't be saved)
     if (!userId) {
-      return NextResponse.json({ success: false, message: 'Not logged in' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Not logged in' }, { status: 401 }      );
     }
 
-    // Upsert: update if exists, create if not
     const userCode = await prisma.userCode.upsert({
       where: {
         userId_problemId: {
