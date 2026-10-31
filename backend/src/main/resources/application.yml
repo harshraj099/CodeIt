@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:8080}
+  # The frontend reaches the API through a proxy (Vite in dev, Vercel rewrites in production).
+  # Honouring X-Forwarded-Host/Proto lets Spring see those requests as same-origin; without it,
+  # every browser POST carries an Origin that doesn't match and is rejected as cross-origin.
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: lldpad
+  config:
+    # Local secrets (MONGODB_URI, JWT_SECRET, SMTP_*) can live in backend/.env, which git ignores.
+    import: optional:file:.env[.properties]
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      # e.g. mongodb+srv://user:password@cluster0.example.mongodb.net/
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      database: ${MONGODB_DATABASE:lldpad}
+      # Creates the unique indexes declared on the documents (one email per user, one vote per user per target, ...).
+      auto-index-creation: true
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASS:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+app:
+  # "production" enables secure cookies and stops returning the OTP in the signup response.
+  env: ${APP_ENV:development}
+  jwt-secret: ${JWT_SECRET:your-secret-key-change-in-production}
+  piston-api-url: ${PISTON_API_URL:https://emkc.org/api/v2/piston/execute}
+  cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
